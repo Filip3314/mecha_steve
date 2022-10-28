@@ -1,0 +1,1 @@
+"""Class for chess commands"""

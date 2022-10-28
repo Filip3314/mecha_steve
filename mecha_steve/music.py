@@ -1,5 +1,6 @@
 """Music related commands for Mecha Steve"""
 from discord.ext import commands
+import utils
 
 
 async def setup(bot: commands.Bot):
@@ -34,38 +35,20 @@ async def skip(ctx):
 @commands.command()
 async def play(ctx, *, arg):
     """Plays the given song"""
-    return await ctx.send(get_song(arg))
-
-
-def get_song(arg):
-    """Figures out the song to play based on the argument passed in"""
-    if 'youtube' in arg:
-        return 'A youtube link!'
-    if 'spotify' in arg:
-        return 'A spotify link!'
-    return 'Gotta search for this!'
+    return await ctx.send(utils.get_song(arg))
 
 
 @commands.command()
 async def join(ctx):
     """Joins the voice channel the user who send the command is in"""
-    user_channel = get_user_channel(ctx)
-    if user_channel is None:
+    if ctx.author.voice is None:
         return await ctx.send("You're not in a voice user_channel!")
 
+    user_channel = ctx.author.voice.channel
     if ctx.voice_client is not None:
         await ctx.voice_client.move_to(user_channel)
     else:
         await user_channel.connect()
-
-
-def get_user_channel(ctx):
-    """Returns the channel that the Author in th given context is in"""
-    try:
-        channel = ctx.author.voice.channel
-    except AttributeError:
-        channel = None
-    return channel
 
 
 @commands.command()

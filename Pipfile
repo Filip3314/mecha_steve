@@ -9,6 +9,7 @@ discord = "*"
 pylint = "*"
 pafy = "*"
 pynacl = "*"
+pytest = "*"
 
 [dev-packages]
 
