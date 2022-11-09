@@ -1,6 +1,6 @@
 """Music related commands for Mecha Steve"""
 from discord.ext import commands
-import utils
+import music.music_utils as utils
 
 
 async def setup(bot: commands.Bot):
@@ -35,7 +35,9 @@ async def skip(ctx):
 @commands.command()
 async def play(ctx, *, arg):
     """Plays the given song"""
-    return await ctx.send(utils.get_song(arg))
+    song = utils.get_song(arg)
+    await ctx.voice_client.play(song)
+    return await ctx.send("Now playing" + song.title)
 
 
 @commands.command()

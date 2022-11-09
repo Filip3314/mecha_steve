@@ -17,7 +17,7 @@ intents = discord.Intents(messages=True, presences=True, guilds=True,
                           members=True,  message_content=True, voice_states=True)
 
 bot = commands.Bot(command_prefix='$', intents=intents)
-asyncio.run(bot.load_extension('music'))
+asyncio.run(bot.load_extension('music.music_commands'))
 
 with open('../token', encoding='utf-8') as f:
     token = f.read()
