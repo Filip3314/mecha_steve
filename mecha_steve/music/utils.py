@@ -35,13 +35,17 @@ async def find_audio_online(arg):
     if arg == "":
         return None
     url = arg if arg.startswith('http') else 'https://' + arg
-    response = requests.get(url)
-    data = await asyncio.get_event_loop().run_in_executor(None, lambda: ytdl.extract_info(arg,
-                                                                                      download=False))
-    if response.status_code < 400:
-        source = data
+    try:
+        response = requests.get(url).raise_for_status()
+    except requests.exceptions.ConnectionError:
+        ytdl_input=url 
+        search=True
     else:
-        source = data['entries'][0]
+        ytdl_input=arg
+        search=False
+        
+    data = await asyncio.get_event_loop().run_in_executor(None, lambda: ytdl.extract_info(ytdl_input,
+                                                                                      download=False))
 
     audio_url = source['url']
     title = source['title']

@@ -1,5 +1,6 @@
 import mecha_steve.music.utils as utils
 import pytest
+from requests.exceptions import HTTPError
     
 @pytest.mark.asyncio
 async def test_empty_arg():
@@ -26,7 +27,15 @@ async def test_connetion_error():
 
 @pytest.mark.asyncio
 async def test_404():
-    assert await utils.find_audio_online("youtube.com/bruh")
+    with pytest.raises(HTTPError):
+        assert await utils.find_audio_online("youtube.com/bruh")
+    with pytest.raises(HTTPError):
+        assert await utils.find_audio_online("https://youtube.com/bruh")
+    with pytest.raises(HTTPError):
+        assert await utils.find_audio_online("https://google.com/wrong_address")
+    with pytest.raises(HTTPError):
+        assert await utils.find_audio_online("https://open.spotify.com/track/7sfljKs4VCY1wFebnOdJrM13t6?si=320c5c1d8a704266")
+        
     
 @pytest.mark.asyncio
 async def test_spotify_url():
