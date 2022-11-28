@@ -27,8 +27,12 @@ async def test_search():
     assert "sniffer.avi" == (await utils.find_audio_online("sniffer.avi")).title
 
 @pytest.mark.asyncio
-async def test_connetion_error():
-    assert "https://sadfjdslkj.com" == (await utils.find_audio_online("sniffer.avi")).title
+async def test_fake_well_formed_url():
+    assert "googlevideo.com" in (await utils.find_audio_online("https://sadfjdslkj.com")).url
+
+@pytest.mark.asyncio
+async def test_malformed_url():
+    assert "googlevideo.com" in (await utils.find_audio_online("htp://youtube.bruh")).url
 
 @pytest.mark.asyncio
 async def test_404():
