@@ -45,7 +45,6 @@ async def find_audio_online(arg):
         
     data = await asyncio.get_event_loop().run_in_executor(None, lambda: ytdl.extract_info(ytdl_input,
                                                                                       download=False))
-    print(data['extractor'])
     if ytdl_input == url:
         source = data
     else:
