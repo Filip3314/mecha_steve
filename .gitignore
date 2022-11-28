@@ -130,3 +130,6 @@ dmypy.json
 
 #token file. don't share this
 token
+
+#vim
+*.swp
