@@ -32,20 +32,25 @@ class MechaSource(discord.PCMVolumeTransformer):
 
 async def find_audio_online(arg):
     """Returns an audio stream that best matches the given argument."""
-    if arg == "":
-        return None
+    if not arg:
+        raise ValueError("find_audio_online needs a non-empty input to search")
+
     url = arg if arg.startswith('http') else 'https://' + arg
     try:
         response = requests.get(url).raise_for_status()
     except requests.exceptions.ConnectionError:
-        ytdl_input=url 
-        search=True
-    else:
         ytdl_input=arg
-        search=False
+    else:
+        ytdl_input=url 
         
     data = await asyncio.get_event_loop().run_in_executor(None, lambda: ytdl.extract_info(ytdl_input,
                                                                                       download=False))
+    print(data['extractor'])
+    if ytdl_input == url:
+        source = data
+    else:
+        source = data['entries'][0]
+
 
     audio_url = source['url']
     title = source['title']

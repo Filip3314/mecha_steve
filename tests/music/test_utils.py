@@ -4,7 +4,12 @@ from requests.exceptions import HTTPError
     
 @pytest.mark.asyncio
 async def test_empty_arg():
-    assert await utils.find_audio_online("") == None
+    with pytest.raises(ValueError):
+        await utils.find_audio_online("")
+    with pytest.raises(ValueError):
+        await utils.find_audio_online(None)
+    with pytest.raises(ValueError):
+        await utils.find_audio_online(False)
 
 @pytest.mark.asyncio
 async def test_youtube_url():
@@ -13,7 +18,7 @@ async def test_youtube_url():
     assert "sniffer.avi" == (await utils.find_audio_online("https://www.youtube.com/watch?v=SCZI7fZJlgE")).title
     assert "sniffer.avi" == (await utils.find_audio_online("https://youtu.be/SCZI7fZJlgE")).title
     assert "sniffer.avi" == (await utils.find_audio_online("http://youtu.be/SCZI7fZJlgE")).title
-    assert "sniffer.avi" == (await utils.find_audio_online("youtu.be/SCZI7fZJlgE")).title
+    assert "googlevideo.com" in (await utils.find_audio_online("youtu.be/SCZI7fZJlgE")).url
 
 
 @pytest.mark.asyncio
