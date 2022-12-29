@@ -1,6 +1,6 @@
 """Music related commands for Mecha Steve"""
 from discord.ext import commands
-import music.music_utils as utils
+import music.utils as utils
 
 
 async def setup(bot: commands.Bot):
@@ -35,16 +35,16 @@ async def skip(ctx):
 @commands.command()
 async def play(ctx, *, arg):
     """Plays the given song"""
-    source = utils.get_source(arg)
-    await ctx.voice_client.play(source)
-    return await ctx.send("Now playing" + source.title)
+    source = await utils.find_audio_online(arg)
+    ctx.voice_client.play(source)
+    return await ctx.send("Now playing " + source.title)
 
 
 @commands.command()
 async def join(ctx):
     """Joins the voice channel the user who send the command is in"""
     if ctx.author.voice is None:
-        return await ctx.send("You're not in a voice user_channel!")
+        return await ctx.send("You're not in a voice channel!")
 
     user_channel = ctx.author.voice.channel
     if ctx.voice_client is not None:

@@ -29,6 +29,7 @@ class MechaSource(discord.PCMVolumeTransformer):
         self.original = source
         self. url = url
         self.title = title
+        self._volume = 1
 
 async def find_audio_online(arg):
     """Returns an audio stream that best matches the given argument."""

@@ -20,19 +20,37 @@ async def test_youtube_url():
     assert "sniffer.avi" == (await utils.find_audio_online("http://youtu.be/SCZI7fZJlgE")).title
     assert "googlevideo.com" in (await utils.find_audio_online("youtu.be/SCZI7fZJlgE")).url
 
-
 @pytest.mark.asyncio
 async def test_search():
     assert "Never Gonna Give You Up" in (await utils.find_audio_online("youtube never gonna give you up")).title
     assert "sniffer.avi" == (await utils.find_audio_online("sniffer.avi")).title
 
 @pytest.mark.asyncio
-async def test_fake_well_formed_url():
+async def test_fake_http_url():
     assert "googlevideo.com" in (await utils.find_audio_online("https://sadfjdslkj.com")).url
+    assert "googlevideo.com" in (await utils.find_audio_online("http://sadfjdslkj.com")).url
+    assert "googlevideo.com" in (await utils.find_audio_online("http://sadfjdslk.xyz")).url
+    
+@pytest.mark.asyncio
+async def test_no_source_url():
+    assert "googlevideo.com" in (await utils.find_audio_online("bing.com")).url
+
 
 @pytest.mark.asyncio
-async def test_malformed_url():
-    assert "googlevideo.com" in (await utils.find_audio_online("htp://youtube.bruh")).url
+async def test_fake_no_http_url():
+    assert "googlevideo.com" in (await utils.find_audio_online("sadfjdslkj.com")).url
+    assert "googlevideo.com" in (await utils.find_audio_online("saskldjflkdsjf.co")).url
+    assert "googlevideo.com" in (await utils.find_audio_online("sadfjdslk.xyz")).url
+
+@pytest.mark.asyncio
+async def test_malformed_url_no_http():
+    assert "googlevideo.com" in (await utils.find_audio_online("htp://youtube")).url
+    assert "googlevideo.com" in (await utils.find_audio_online("htp://youtube.a")).url
+
+@pytest.mark.asyncio
+async def test_malformed_url_with_http():
+    assert "googlevideo.com" in (await utils.find_audio_online("http://youtube")).url
+    assert "googlevideo.com" in (await utils.find_audio_online("https://youtube.a")).url
 
 @pytest.mark.asyncio
 async def test_404():
