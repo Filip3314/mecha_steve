@@ -9,7 +9,7 @@ ytdl_format_options = {
     'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
     'restrictfilenames': True,
-   'noplaylist': True,
+    'noplaylist': True,
     'nocheckcertificate': True,
     'ignoreerrors': False,
     'logtostderr': False, 'quiet': True,
@@ -35,21 +35,15 @@ async def find_audio_online(arg):
     """Returns an audio stream that best matches the given argument."""
     if not arg:
         raise ValueError("find_audio_online needs a non-empty input to search")
+    if arg.startswith("\"") and arg.endswith("\""):
+        arg = "ytsearch:" + arg
 
-    url = arg if arg.startswith('http') else 'https://' + arg
-    try:
-        response = requests.get(url).raise_for_status()
-    except requests.exceptions.ConnectionError:
-        ytdl_input=arg
-    else:
-        ytdl_input=url 
-        
-    data = await asyncio.get_event_loop().run_in_executor(None, lambda: ytdl.extract_info(ytdl_input,
+    data = await asyncio.get_event_loop().run_in_executor(None, lambda: ytdl.extract_info(arg,
                                                                                       download=False))
-    if ytdl_input == url:
-        source = data
-    else:
+    if 'entries' in data.keys():
         source = data['entries'][0]
+    else:
+        source = data
 
 
     audio_url = source['url']

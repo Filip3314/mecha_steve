@@ -3,6 +3,7 @@ import logging
 import asyncio
 import discord
 from discord.ext import commands
+from music.commands import Music
 
 # Setting up logging
 logger = logging.getLogger('discord')
@@ -17,7 +18,7 @@ intents = discord.Intents(messages=True, presences=True, guilds=True,
                           members=True,  message_content=True, voice_states=True)
 
 bot = commands.Bot(command_prefix='$', intents=intents)
-asyncio.run(bot.load_extension('music.commands'))
+asyncio.run(bot.add_cog(Music(bot, logger)))
 
 with open('../token', encoding='utf-8') as f:
     token = f.read()

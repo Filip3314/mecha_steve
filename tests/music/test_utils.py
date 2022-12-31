@@ -1,5 +1,6 @@
 import mecha_steve.music.utils as utils
 import pytest
+from youtube_dl import DownloadError
 from requests.exceptions import HTTPError
     
 @pytest.mark.asyncio
@@ -21,49 +22,40 @@ async def test_youtube_url():
     assert "googlevideo.com" in (await utils.find_audio_online("youtu.be/SCZI7fZJlgE")).url
 
 @pytest.mark.asyncio
+async def test_quoted_url():
+    assert "googlevideo.com" in (await utils.find_audio_online("\"/google.com/bruh_moment\"")).url
+    assert "googlevideo.com" in (await utils.find_audio_online("\"https://google.com/bruh_moment\"")).url
+    assert "googlevideo.com" in (await utils.find_audio_online("\"ytsearch:google.com/bruh_moment\"")).url
+    assert "googlevideo.com" in (await utils.find_audio_online("ytsearch:\"https://google.com/bruh_moment\"")).url
+    assert "googlevideo.com" in (await utils.find_audio_online("ytsearch:\"ytsearch:google.com/bruh_moment\"")).url
+
+@pytest.mark.asyncio
 async def test_search():
     assert "Never Gonna Give You Up" in (await utils.find_audio_online("youtube never gonna give you up")).title
     assert "sniffer.avi" == (await utils.find_audio_online("sniffer.avi")).title
 
 @pytest.mark.asyncio
 async def test_fake_http_url():
-    assert "googlevideo.com" in (await utils.find_audio_online("https://sadfjdslkj.com")).url
-    assert "googlevideo.com" in (await utils.find_audio_online("http://sadfjdslkj.com")).url
-    assert "googlevideo.com" in (await utils.find_audio_online("http://sadfjdslk.xyz")).url
-    
-@pytest.mark.asyncio
-async def test_no_source_url():
-    assert "googlevideo.com" in (await utils.find_audio_online("bing.com")).url
-
-
-@pytest.mark.asyncio
-async def test_fake_no_http_url():
-    assert "googlevideo.com" in (await utils.find_audio_online("sadfjdslkj.com")).url
-    assert "googlevideo.com" in (await utils.find_audio_online("saskldjflkdsjf.co")).url
-    assert "googlevideo.com" in (await utils.find_audio_online("sadfjdslk.xyz")).url
-
-@pytest.mark.asyncio
-async def test_malformed_url_no_http():
-    assert "googlevideo.com" in (await utils.find_audio_online("htp://youtube")).url
-    assert "googlevideo.com" in (await utils.find_audio_online("htp://youtube.a")).url
-
-@pytest.mark.asyncio
-async def test_malformed_url_with_http():
-    assert "googlevideo.com" in (await utils.find_audio_online("http://youtube")).url
-    assert "googlevideo.com" in (await utils.find_audio_online("https://youtube.a")).url
+    with pytest.raises(DownloadError):
+        await utils.find_audio_online("https://sadfjdslkj.com")
 
 @pytest.mark.asyncio
 async def test_404():
-    with pytest.raises(HTTPError):
+    with pytest.raises(DownloadError):
         assert await utils.find_audio_online("youtube.com/bruh")
-    with pytest.raises(HTTPError):
-        assert await utils.find_audio_online("https://youtube.com/bruh")
-    with pytest.raises(HTTPError):
-        assert await utils.find_audio_online("https://google.com/wrong_address")
-    with pytest.raises(HTTPError):
-        assert await utils.find_audio_online("https://open.spotify.com/track/7sfljKs4VCY1wFebnOdJrM13t6?si=320c5c1d8a704266")
-        
     
 @pytest.mark.asyncio
+async def test_no_source_url():
+    with pytest.raises(DownloadError):
+        assert await utils.find_audio_online("https://bing.com")
+
+@pytest.mark.asyncio
 async def test_spotify_url():
-   assert "Gas Gas Gas" in (await utils.find_audio_online("https://open.spotify.com/album/0uhTliVFDT7CCzitqtW4KA")).title
+    with pytest.raises(DownloadError):
+        assert "Gas Gas Gas" in (await utils.find_audio_online("https://open.spotify.com/album/0uhTliVFDT7CCzitqtW4KA")).title
+    with pytest.raises(DownloadError):
+        assert "Graceland Too" in (await utils.find_audio_online("https://open.spotify.com/track/1WCjhRs2WBgyeGaybCX2Po?si=1e2ea4843bc441c6")).title
+
+@pytest.mark.asyncio
+async def test_bandcamp_url():
+    assert "Diamond's Shining Face" in (await utils.find_audio_online("https://godcaster.bandcamp.com/track/diamonds-shining-face")).title
