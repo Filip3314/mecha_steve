@@ -18,3 +18,4 @@ def enforce_in_same_voice_channel():
             await ctx.send("You are not connected to a voice channel.")
             raise commands.CommandError("Author not connected to a voice channel.")
     return commands.check(predicate)
+

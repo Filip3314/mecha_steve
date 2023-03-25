@@ -1,22 +1,22 @@
 """Music related commands for Mecha Steve"""
 
 from discord.ext import commands
+
 import utils
 import discord
-import youtube_dl
+import yt_dlp
 import asyncio
-import queue
 
-ytdl_format_options = {
+ytdlp_options = {
     "format": "bestaudio/best",
     "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
     "restrictfilenames": True,
     "noplaylist": True,
     "nocheckcertificate": True,
-    "ignoreerrors": False,
+    "ignoreerrors": True,
     "logtostderr": False,
-    "quiet": True,
-    "no_warnings": True,
+    "quiet": False,
+    "no_warnings": False,
     "default_search": "auto",
     "source_address": "0.0.0.0",  # bind to ipv4 since ipv6 addresses cause issues sometimes
 }
@@ -25,28 +25,29 @@ ffmpeg_options = {
     "options": "-vn",
 }
 
-ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+ytdl = yt_dlp.YoutubeDL(ytdlp_options)
 
 
 class MechaSource(discord.PCMVolumeTransformer):
     """Wrapper for audio sources. Contains information necessary to communicate source being used to user."""
 
     def __init__(self, source, url, title):
+        super().__init__()
         self.original = source
         self.url = url
         self.title = title
         self._volume = 1
 
 
-async def find_audio_online(arg):
+async def find_audio_online(query):
     """Returns an audio stream that best matches the given argument."""
-    if not arg:
+    if not query:
         raise ValueError("find_audio_online needs a non-empty input to search")
-    if arg.startswith('"') and arg.endswith('"'):
-        arg = "ytsearch:" + arg
+    if query.startswith('"') and query.endswith('"'):
+        query = "ytsearch:" + query
 
     data = await asyncio.get_event_loop().run_in_executor(
-        None, lambda: ytdl.extract_info(arg, download=False)
+        None, lambda: ytdl.extract_info(query, download=False)
     )
 
     if "entries" in data.keys():  # checking if data is a search result or not
@@ -66,7 +67,7 @@ class Music(commands.Cog):
     def __init__(self, bot, logger):
         self.bot = bot
         self.logger = logger
-        self.queue = queue.Queue()
+        self.queue = []
 
     @commands.command()
     @utils.enforce_in_same_voice_channel()
@@ -78,26 +79,59 @@ class Music(commands.Cog):
     @commands.command()
     @utils.enforce_in_same_voice_channel()
     async def skip(self, ctx):
-        """Skips the current song and plays the next one (if it exsits)"""
-        await ctx.send("skip")
-        return
+        """Skips the current song and plays the next one (if it exists)"""
+        voice = ctx.voice_client
+        if voice and voice.is_playing():
+            voice.stop()
+            await ctx.send('Skipping the current audio...')
+        else:
+            await ctx.send('Nothing to skip.')
+
 
     @commands.command(aliases=['p'])
     @utils.enforce_in_same_voice_channel()
     async def play(self, ctx, *, arg=""):
+        ## playing songs
+        # get input
+        # find a source online/locally
+        # add song to queue
+        # determine whether to play the song immediately
         """Plays the given song"""
         self.logger.info("Trying to play: " + arg)
+        voice = ctx.voice_client
         try:
             source = await find_audio_online(arg)
         except ValueError:
             return await ctx.send(
                 "Play needs a search or URL input to play a song. See $help for more info."
             )
-        except youtube_dl.DownloadError as err:
+        except yt_dlp.DownloadError as err:
             return await ctx.send(str(err))
-        ctx.voice_client.play(source)
-        await ctx.send("Now playing " + source.title)
+        self.queue.append(source)
+        if not voice.is_playing():
+            self.play_next(ctx)
+        else:
+            await ctx.send("Queued " + source.title)
         return 0
+
+    def play_next(self, ctx):
+        if len(self.queue) > 0:
+            voice = ctx.voice_client
+            source = self.queue.pop(0)
+            try:
+                voice.play(source, after=lambda x: self.play_next(ctx))
+                #TODO fix this maybe? Not sure this is a good solution
+                asyncio.run_coroutine_threadsafe(ctx.send(f'Now playing: {source.title}'), self.bot.loop)
+            except:
+                #TODO add exception handling
+                pass
+
+    @commands.command()
+    async def song(self, ctx):
+        #TODO add tests
+        source = ctx.voice_client.source
+        await ctx.send("[{0}]({1})".format(source.title, source.url))
+
 
     @commands.command()
     async def join(self, ctx):

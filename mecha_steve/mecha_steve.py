@@ -2,6 +2,7 @@
 import logging
 import asyncio
 import discord
+from help import MechaSteveHelp
 from discord.ext import commands
 from music.commands import Music
 
@@ -14,13 +15,16 @@ formatter = logging.Formatter('[{asctime}] [{levelname}] {name}: {message}', dt_
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-intents = discord.Intents(messages=True, presences=True, guilds=True,
-                          members=True,  message_content=True, voice_states=True)
 
-bot = commands.Bot(command_prefix='$', intents=intents)
-asyncio.run(bot.add_cog(Music(bot, logger)))
+async def make_bot():
+    intents = discord.Intents(messages=True, presences=True, guilds=True,
+                              members=True, message_content=True, voice_states=True)
+    bot = commands.Bot(command_prefix='$', intents=intents, help_command=MechaSteveHelp())
+    await bot.add_cog(Music(bot, logger))
+    return bot
+
 
 with open('../token', encoding='utf-8') as f:
     token = f.read()
 
-bot.run(token)
+asyncio.run(make_bot()).run(token)
