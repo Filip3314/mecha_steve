@@ -32,8 +32,8 @@ class MechaSource(discord.PCMVolumeTransformer):
     """Wrapper for audio sources. Contains information necessary to communicate source being used to user."""
 
     def __init__(self, source, url, title):
-        super().__init__()
-        self.original = source
+        super().__init__(source)
+        self.source = source
         self.url = url
         self.title = title
         self._volume = 1

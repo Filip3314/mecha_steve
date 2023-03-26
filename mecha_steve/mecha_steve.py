@@ -15,16 +15,15 @@ formatter = logging.Formatter('[{asctime}] [{levelname}] {name}: {message}', dt_
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-
-async def make_bot():
+async def make_bot(logger):
     intents = discord.Intents(messages=True, presences=True, guilds=True,
                               members=True, message_content=True, voice_states=True)
     bot = commands.Bot(command_prefix='$', intents=intents, help_command=MechaSteveHelp())
     await bot.add_cog(Music(bot, logger))
     return bot
 
-
 with open('../token', encoding='utf-8') as f:
     token = f.read()
 
-asyncio.run(make_bot()).run(token)
+if __name__ == "__main__":
+    asyncio.run(make_bot(logger)).run(token)

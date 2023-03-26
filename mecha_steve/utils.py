@@ -1,6 +1,7 @@
 from discord.ext import commands
 
 
+
 def enforce_in_same_voice_channel():
     async def predicate(ctx):
         if ctx.author.voice:
